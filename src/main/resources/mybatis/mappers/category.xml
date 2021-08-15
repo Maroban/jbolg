@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="category">
+
+	<!-- 카테고리 리스트 가져오기 -->
+	<select id="selectCategory" resultType="CategoryVo" parameterType="String">
+		<![CDATA[
+			SELECT
+			    c.cateno,
+			    COUNT(p.cateno) count,
+			    c.id,
+			    c.catename,
+			    c.description,
+			    c.regdate
+			FROM
+			    category  c FULL OUTER JOIN post p
+			        ON c.cateno = p.cateno
+			WHERE
+			    id = #{id}
+			GROUP BY
+			    c.cateno,
+			    c.id,
+			    c.catename,
+			    c.description,
+			    c.regdate
+		    ORDER BY
+    			c.cateno DESC
+		]]>
+	</select>
+
+	<!-- 카테고리 미분류 추가 -->
+	<insert id="insertBasicCate" parameterType="UserVo">
+		<![CDATA[
+			INSERT INTO category VALUES (
+			    seq_category_no.NEXTVAL,
+			    #{id},
+			    '미분류',
+			    '기본으로 만들어지는 카테고리 입니다.',
+			    sysdate
+			)
+		]]>
+	</insert>
+
+	<!-- 카테고리 추가 -->
+	<insert id="insertCate" parameterType="CategoryVo">
+		<selectKey keyProperty="cateno" resultType="int" order="BEFORE">
+				<![CDATA[
+					SELECT
+						seq_category_no.NEXTVAL
+					FROM
+						dual
+				]]>
+		</selectKey>
+		<![CDATA[
+
+			INSERT INTO category VALUES (
+			    #{cateno},
+			    #{id},
+			    #{catename},
+			    #{description},
+			    sysdate
+			)
+		]]>
+	</insert>
+
+	<!-- 카테고리 가져오기(ajax) -->
+	<select id="selectCategoryOne" resultType="CategoryVo" parameterType="int">
+		<![CDATA[
+			SELECT
+			    c.cateno,
+			    COUNT(p.cateno) count,
+			    c.id,
+			    c.catename,
+			    c.description,
+			    c.regdate
+			FROM
+			    category  c FULL OUTER JOIN post p
+			        ON c.cateno = p.cateno
+			WHERE
+			    c.cateno = #{cateno}
+			GROUP BY
+			    c.cateno,
+			    c.id,
+			    c.catename,
+			    c.description,
+			    c.regdate
+		    ORDER BY
+    			c.cateno DESC
+		]]>
+	</select>
+
+	<!-- 카테고리 삭제(ajax) -->
+	<delete id="deleteCategory" parameterType="int">
+		<![CDATA[
+			DELETE FROM category
+			WHERE
+			    cateno = #{cateno}
+		]]>
+	</delete>
+
+	<!-- 글쓰기 -->
+	<insert id="insertWrite" parameterType="CategoryVo">
+		<![CDATA[
+			INSERT INTO post VALUES (
+			    seq_post_no.NEXTVAL,
+			    #{cateno},
+			    #{posttitle},
+			    #{postcontent},
+			    sysdate
+			)
+		]]>
+	</insert>
+
+	<!-- post 리스트 -->
+	<select id="selectPostList" resultType="CategoryVo" parameterType="String">
+		<![CDATA[
+			SELECT
+			    c.cateno,
+			    c.catename,
+			    c.id,
+			    p.postno,
+			    p.posttitle,
+			    p.postcontent,
+			    to_char(p.regdate, 'yyyy/mm/dd') regdate
+			FROM
+			    category  c,
+			    post      p
+			WHERE
+			        c.cateno = p.cateno
+				AND id = #{id}
+			ORDER BY
+			    p.regdate DESC
+		]]>
+	</select>
+
+	<!-- post 한개 가져오기 -->
+	<select id="selectPostOne" resultType="CategoryVo" parameterType="int">
+		<![CDATA[
+			SELECT
+			    c.cateno,
+			    c.catename,
+			    c.id,
+			    p.postno,
+			    p.posttitle,
+			    p.postcontent,
+			    to_char(p.regdate, 'yyyy/mm/dd') regdate
+			FROM
+			    category  c,
+			    post      p
+			WHERE
+			        c.cateno = p.cateno
+				AND p.postno = #{postno}
+			ORDER BY
+			    p.regdate DESC
+		]]>
+	</select>
+
+		<!-- 카테고리 post 리스트 -->
+	<select id="selectCatePostList" resultType="CategoryVo" parameterType="int">
+		<![CDATA[
+			SELECT
+			    c.cateno,
+			    c.catename,
+			    c.id,
+			    p.postno,
+			    p.posttitle,
+			    p.postcontent,
+			    to_char(p.regdate, 'yyyy/mm/dd') regdate
+			FROM
+			    category  c,
+			    post      p
+			WHERE
+			        c.cateno = p.cateno
+    			AND c.cateno = #{cateno}
+			ORDER BY
+			    p.regdate DESC
+		]]>
+	</select>
+
+</mapper>
